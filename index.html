@@ -16,6 +16,176 @@
     <link rel="stylesheet" href="style.css"/>
 </head>
 
+<body>
+    <!--'Desk Surface' el fondo en donde estara colodaco el reproductor-->
+    <main class="desk-surface">
 
+        <!--Aca esta toda la carcasa fisica color crema del aparato y le colocamos un ID para poder manipularlo desde JavaScript-->
+        <div class="device-chassis" id="deviceChassis">
+
+        <!--Seccion Superior: Contiene el plato, controles centrales y pantalla circular-->
+        <section class="upper-desk">
+
+            <!--Zona Izquierda: Plato giratorio (tambien funcionara como zona para soltar los CD's arrastrados)-->
+            <div class="turntable-zone" id="dropZone">
+
+                <!--Aro exterior transparente del plato-->
+                <div class="platter-ring">
+                
+                    <!--Conjunto del disco que girara cuando suene la musica-->
+                    <div class="disc-assembly" id="discAssembly">
+
+                        <!--Contenedor circular de la caratula del album-->
+                        <div class="disc-art" id="discArt">
+                            <!--Imagen de portada (cambiara automaticamente segun el album elegido)-->
+                            <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=500&q=80" alt="Album Cover" id="currentCoverImg" />
+                        </div>
+                        
+                        <!--Aro negro central del disco-->
+                        <div class="disc-center-ring">
+                            <!--Eje metalico central donde encaja el disco-->
+                            <div class="disc-spindle"></div>
+                        </div>
+                    
+                    </div>
+                </div>
+                
+                <!--Brazo Articulado (tonearm): Cada 'div' es una pieza fisica del brazo-->
+                <div class="tonearm-assembly" id="tonearm">
+                    <!--Contrapeso cilindrico verde salvia en la parte trasera-->
+                    <div class="tonearm-counterweight"></div>
+                    <!--Base circular metalica sobre la que gira el brazo-->
+                    <div class="tonearm-pivot"></div>
+                    <!--Varilla metalica larga del brazo-->
+                    <div class="tonearm-rod"></div>
+                    <!--Cabezal circular color coral en la punta-->
+                    <div class="tonearm-headshell">
+                        <!--Detalle centrak amarillo dentro del cabezal-->
+                        <div class="headshell-cap"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!--Zona Central: Botones de transporte y pantalla con la pista-->
+            <div class="center-console">
+
+                <!--Caja que agrupa los 3 botones fisicos-->
+                <div class="transport-controls">
+                    <!--Boton: Cancion Anterior-->
+                    <button class="hw-btn" id="prevBtn" title="Anterior">
+                        <!--Pequeño punto LED en la esquina del boton-->
+                        <span class="LED"></span>
+                        <!--Dibujo vectorial (SGV) del icono retroceder-->
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor0"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"></svg>
+                    </button>
+
+                    <!--Boton: Reproducir / Pausar-->
+                    <button class="hw-btn" id="playPauseBtn" title="Reproducir / Pausar">
+                        <!--LED que brillara en verde cuando este reproduciendo-->
+                        <span class="led active" id="playLed"></span>
+                        <svg id="playIcon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    </button>
+
+                    <!--Boton: Siguiente Cancion-->
+                    <button class="hw-btn" id="nextBtn" title="Siguiente">
+                        <span class="led"></span>
+                        <!-- Icono SVG de avanzar -->
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                    </button>
+
+                </div>
+
+                <!--Pantalla OLED Rectangular: Muestra el titulo activo, la lista y el progreso-->
+                <div class="oled-screen tracklist-screen" id="tracklistScreen">
+                    <!--Linea superior fija con el nombre de la cancion que suena ahora-->
+                    <div class="now-playing-mini" id="miniTrackTitle">1. Slecciona o agrega un CD</div>               </div>
+                
+                    <!--Lista desordenada ('ul') donde JavaScript insertara las canciones del album-->
+                    <ul class="track-list" id="trackList">
+                        <li class="track-item active">01. Pista de demostracion</li>
+                        <li class="track-item">02. Arrastra un CD al plato</li>
+                        <li class="track-item">03. 0 toca + agregar CD</li>
+                    </ul>
+                    
+                    <!--Contenedor de la barra deslizable de tiempo de la cancion-->
+                    <div class="progress-wrapper">
+                        <!--Control deslizante ('range') de 0% a 100%-->
+                        <input type="range" id="progressBar" min="0" max="100" value="35"/>
+                    </div>
+                </div>
+
+            <!--Zona Derecha: Encendido, pantalla circular y control de volumen-->
+            <div class="right-console">
+
+                <!--Fila superior con el boton circular de encendido y su luz LED-->
+                <div class="power-row">
+                    <button class="power-btn" id="powerBtn" title="Encender / Apagar">
+                        <!--Icono SVG universal de encendido (Power)-->
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                            <line x1="12" y1="2" x2="12" y2="12"></line>
+                        </svg>
+                    </button>
+                    <!--Luz piloto que indica si el equipo esta encendido-->
+                    <span class="power-led on" id="powerLed"></span>
+                </div>
+
+                <!--Bisel exterior metalico de la pantalla circular-->
+                <div class="circular-display-bezel">
+                    <!--Pantalla circular oscura-->
+                    <div class="circular-screen" id="circularScreen">
+                        <!--Lienzo ('canvas') donde JavaScript dibujara las barras del equalizador en movimiento-->
+                        <canvas id="eqCanvas" width="210" height="210"></canvas>
+                        <!--Textos centrales con el nombre de la cancion y el artista-->
+                        <div class="circular-info">
+                            <h2 id="mainTrackTitle">Sin Disco</h2>
+                            <p id="mainArtistName">Carga un Album</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!--Caja del control deslizante fisico de volumen-->
+                <div class="volume-fader-box">
+                    <div class="fader-track">
+                        <!--control deslizante de 0 (silencio) a 1 (volumen maximo) iniciando en 0.8 (80%)-->
+                        <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.8"/>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!--Ranura metalica horizontal que divide la parte superiro de la vitrina inferior-->
+        <div class="chassis-groove"></div>
+
+        <!--Seccion Inferior: vitrina de coleccion de CDs-->
+        <section class="lower-deck">
+
+            <!--Barra de herramientas sobre la vitrina-->
+            <div class="library-toolbar">
+                <!--Boton cuadrado para alternar entre vista de cuadricula y vista de lista-->
+                <button class="hw-btn-small" id="toggleLayoutBtn" title="Cambiar vista">
+                    <svg viewBox="0 0 24 24" width="16" heigh="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points=" 9 14 4 9 9 4"></polyline>
+                        <path d="M20 20v-7a4 4 0 0 0-4H4"></path>
+                    </svg>
+                </button>
+                <!--Boton alargado para abrir el formulario de agregar un nuevo CD-->
+                <button class="hw-btn-pill" id="addCdBtn">+ Agregar CD</button>
+            </div>
+
+        </section>
+
+        <!--Pieza decorativa inferior que simula madera-->
+        <div class="wood-base"></div>
+
+        </div><!--Cierra 'device-chassis'-->
+
+    </main><!--Cierra 'desk-surface'-->
+
+    <!--Conecta el archivo JavaScript al final para asegurarnos que todo el HTML cargue antes de ejecutar el codigo-->
+    <script src="app.js"></script>
+</body>
 
 </html>
