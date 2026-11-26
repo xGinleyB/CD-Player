@@ -6,7 +6,7 @@
 const cdVitrine = document.getElementById('cdVitrine');
 
 // Buscamos el lienzo circular usando su id="eqCanvas"
-const eqCanvas = document.getElementById('eqCanvas')
+const eqCanvas = document.getElementById('eqCanvas');
 
 // Pedimos el contexto '2d' del lienzo: es el "pincel" con el que JavaScript puede dibujar lineas y figuras
 const ctx = eqCanvas.getContext('2d');
@@ -57,7 +57,7 @@ function drawCircularEq() {
         ctx.moveTo(x1, y1);
 
         // Trazamos una linea recta hasta el punto final (x2, y2)
-        ctx-lineTo(x2, y2);
+        ctx.lineTo(x2, y2);
 
         // Pintamos efectivamente la linea sobre el lienzo
         ctx.stroke();
