@@ -63,3 +63,57 @@ function drawCircularEq() {
         ctx.stroke();
     }
 }
+
+// ==========================================
+// PARTE 2: VITRINA DE CDs Y ARRANQUE INICIAL
+// ==========================================
+
+// Definimos la función que llenará la vitrina inferior con los álbumes
+function renderDemoVitrine() {
+  // Guardamos en una constante el enlace de una imagen de muestra para las portadas
+  const sampleCover = 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&q=80';
+
+  // Creamos un arreglo (lista) de 8 objetos que representan cada espacio de la vitrina
+  // 'cover' mostrará la caja con portada; 'disc' mostrará el CD brillante expuesto
+  const slots = [
+    { type: 'cover', img: sampleCover },
+    { type: 'cover', img: sampleCover },
+    { type: 'disc' },
+    { type: 'cover', img: sampleCover },
+    { type: 'disc' },
+    { type: 'cover', img: sampleCover },
+    { type: 'cover', img: sampleCover },
+    { type: 'disc' }
+  ];
+
+  // '.map()' recorre cada elemento de la lista 'slots' y lo transforma en un bloque de texto HTML
+  // '.join("")' une los 8 bloques de texto en uno solo sin agregar comas entre ellos
+  // Finalmente, 'cdVitrine.innerHTML' inserta todo ese HTML dentro de la vitrina en la página
+  cdVitrine.innerHTML = slots.map(slot => {
+    // Si este espacio es de tipo 'disc', devolvemos el HTML del disco iridiscente
+    if (slot.type === 'disc') {
+      return `
+        <div class="cd-case exposed-disc">
+          <div class="iridescent-cd"></div>
+        </div>
+      `;
+    }
+
+    // De lo contrario, devolvemos el HTML de una caja acrílica con su imagen de portada
+    return `
+      <div class="cd-case">
+        <img src="${slot.img}" alt="CD Cover" />
+      </div>
+    `;
+  }).join('');
+}
+
+// ==========================================
+// EJECUCIÓN INICIAL AL CARGAR LA PÁGINA
+// ==========================================
+
+// Llamamos a la función para que dibuje el anillo ecualizador
+drawCircularEq();
+
+// Llamamos a la función para que aparezcan los 8 CDs en la vitrina inferior
+renderDemoVitrine();
