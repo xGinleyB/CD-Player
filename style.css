@@ -79,11 +79,22 @@ body {
 
 /*Seccion Superior: Divide el espacio en 3 columnas (230px izquierda, flexible centro, 220px derecha*/
 .upper-deck {
-    display: grid;
-    grid-template-columns: 210px minmax(200px, 1fr) 200px;
-    gap: 16px;          /*Separacion entre columnas*/
-    align-items: center;/*Alinea verticalmente al centro*/
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
     position: relative;
+    width: 100%;
+}
+
+/* Asegura que la consola central ocupe el espacio flexible del medio */
+.center-console {
+    flex: 1;
+    min-width: 0; /* Evita que la pantalla OLED empuje a las otras columnas */
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
 }
 
 /*Contenedor del plato y el brazo*/
