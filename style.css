@@ -32,6 +32,13 @@ body {
     color: var(--ink-dark);
 }
 
+/* AQUÍ VA LA NUEVA REGLA: Hace que el contenedor de la mesa ocupe el 100% del ancho */
+.desk-surface {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 /*Carcasa fisica principal del reproductor*/
 .device-chassis {
     position: relative;     /*Permite posicionar piezas hijas (como la madera) respecto a esta caja*/
