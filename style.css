@@ -290,7 +290,7 @@ body {
 }
 
 /*Punto LED apagado en la esquina del boton*/
-.hw-btn.led { 
+.hw-btn .led { 
     position: absolute;
     top: 5px;
     right: 6px;
@@ -301,7 +301,7 @@ body {
 }
 
 /*Punto LED encendido con brillo verde menta*/
-.hw-btn.led.active {
+.hw-btn .led.active {
     background: var(--mint-glow);
     box-shadow: 0 0 6px var(--mint-glow);
 }
