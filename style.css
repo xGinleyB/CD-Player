@@ -497,3 +497,141 @@ body {
     accent-color: #8c857b;
     cursor: pointer;
 }
+
+/* Ranura metálica horizontal entre la zona superior y la vitrina */
+.chassis-groove {
+  height: 8px;
+  margin: 22px -28px 18px; /* Márgenes negativos laterales para llegar de borde a borde */
+  background: linear-gradient(180deg, #b8b0a0 0%, #e8e2d5 50%, #cfc7b6 100%);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.25);
+}
+
+/* SECCIÓN INFERIOR: Vitrina */
+.library-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+/* Botones de la barra de herramientas inferior */
+.hw-btn-small,
+.hw-btn-pill {
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #faf7f0 0%, #e5decb 100%);
+  color: var(--ink-dark);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 1px 1px #fff;
+}
+
+.hw-btn-small {
+  width: 34px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hw-btn-pill {
+  padding: 0 14px;
+}
+
+/* Vitrina empotrada con 4 columnas */
+.cd-vitrine {
+  background: #e6dfd1;
+  border-radius: 16px;
+  padding: 14px;
+  min-height: 190px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 espacios iguales por fila */
+  gap: 12px;
+  box-shadow:
+    inset 0 4px 10px rgba(0, 0, 0, 0.16),
+    0 1px 0 rgba(255, 255, 255, 0.85);
+  border: 1px solid #cfc6b4;
+}
+
+/* Caja acrílica de CD (Jewel Case) */
+.cd-case {
+  aspect-ratio: 1 / 1;      /* Mantiene siempre forma cuadrada perfecta */
+  background: #1c1c1c;
+  border-radius: 6px;
+  padding-left: 10px;     /* Simula el lomo negro izquierdo de una caja de CD real */
+  position: relative;
+  overflow: hidden;
+  cursor: grab;           /* Cambia el cursor a una manita indicando que se puede arrastrar */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.22);
+  transition: transform 0.18s ease;
+}
+
+/* Levanta ligeramente la caja al pasar el cursor encima */
+.cd-case:hover {
+  transform: translateY(-3px);
+}
+
+.cd-case img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Estilo para los espacios que muestran el disco iridiscente sin carátula */
+.cd-case.exposed-disc {
+  background: #d8d4cc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+
+/* Disco iridiscente con reflejos tipo arcoíris */
+.cd-case.exposed-disc .iridescent-cd {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 45deg,
+    #d4d4d4,
+    #a8e6cf,
+    #ffd3b6,
+    #dcedc1,
+    #b8b8ff,
+    #d4d4d4
+  );
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.25);
+}
+
+/* Pseudo-elemento '::after' para dibujar el agujero central del CD sin agregar más HTML */
+.cd-case.exposed-disc .iridescent-cd::after {
+  content: '';
+  width: 32%;
+  height: 32%;
+  border-radius: 50%;
+  background: #6b6b6b;
+  border: 4px solid rgba(255, 255, 255, 0.5);
+}
+
+/* DISEÑO RESPONSIVE: Se activa automáticamente si la pantalla mide menos de 740px (iPad vertical / móvil) */
+@media (max-width: 740px) {
+  .upper-deck {
+    grid-template-columns: 1fr; /* Apila las 3 secciones superiores en una sola columna */
+    justify-items: center;
+  }
+  .turntable-zone {
+    margin-left: 0;       /* Centra el plato para que no se corte en pantallas estrechas */
+  }
+  .center-console {
+    width: 100%;
+  }
+  .cd-vitrine {
+    grid-template-columns: repeat(2, 1fr); /* Muestra 2 CDs por fila en lugar de 4 */
+  }
+}
