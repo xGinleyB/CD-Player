@@ -60,7 +60,7 @@ body {
 /*Pieza decortiva inferior de mandera*/
 .wood-base {
     position: absolute;     /*Se coloca libremente respecto al chasis*/
-    bottom: -12 px;         /*Sobresale 12 px por debajo de la carcasa crema*/
+    bottom: -12px;         /*Sobresale 12 px por debajo de la carcasa crema*/
     left: 14px;
     right: 14px;
     height: 18px;
@@ -72,7 +72,7 @@ body {
         var(--wood-dark) 24px,
         var(--wood-tone) 36px
     );
-    border-radius: 0 0 22px 22ox;   /*Redondea solo las esquinas inferiores*/
+    border-radius: 0 0 22px 22px;   /*Redondea solo las esquinas inferiores*/
     z-index: -1;                    /*Lo envia una capa por detras de la carcasa crema*/
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
 }
@@ -131,7 +131,7 @@ body {
 /*Define los fotogramas de rotacion continua de 0 a 360 grados*/
 @keyframes spinDisc {
     from { transform:  rotate(0deg);}
-    to { transform: rotate(360deg)};
+    to { transform: rotate(360deg);}
 }
 
 /*Contenedor de la imagen de caratula*/
@@ -208,13 +208,14 @@ body {
 }
 
 /*Base circular metalica del pivote*/
-.tonearm-rod {
+.tonearm-pivot {
     position: absolute;
     top: 16px;
     left: 9px;
     width: 26px;
     height: 26px;
-    border-radius: radial-gradient(circle at 35% 35%, #ffffff, #a8a296);
+    border-radius: 50%;
+    background:(circle at 35% 35%, #ffffff, #a8a296);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
@@ -291,8 +292,8 @@ body {
 }
 
 /*Efecto mecanico al precionar el boton*/
-.hw-btn.active {
-    transform: translate(2px);  /*Baja 2 pixeles*/
+.hw-btn:active {
+    transform: translateY(2px);  /*Baja 2 pixeles*/
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
@@ -317,7 +318,7 @@ body {
 .oled-screen {
     background: var(--oled-gb);
     border-radius: 14px;
-    padding: 12 px 14px;
+    padding: 12px 14px;
     color: #d8ece3;
     font-family: 'JetBrains Mono', monospace; /*Fuente estilo terminar/digital*/
     box-shadow: 
@@ -442,7 +443,7 @@ body {
     height: 196px;
     border-radius: 50%;
     padding: 6px;
-    background: linear-gradient(145 deg, #dcd5c5, #ffffff);
+    background: linear-gradient(145deg, #dcd5c5, #ffffff);
     box-shadow: 0 6px 14px rgb(0, 0, 0, 0.16);
 }
 

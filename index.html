@@ -76,7 +76,7 @@
                         <!--Pequeño punto LED en la esquina del boton-->
                         <span class="LED"></span>
                         <!--Dibujo vectorial (SGV) del icono retroceder-->
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor0"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"></svg>
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"></svg>
                     </button>
 
                     <!--Boton: Reproducir / Pausar-->
@@ -113,7 +113,7 @@
                         <input type="range" id="progressBar" min="0" max="100" value="35"/>
                     </div>
                 </div>
-
+            </div>
             <!--Zona Derecha: Encendido, pantalla circular y control de volumen-->
             <div class="right-console">
 
@@ -164,11 +164,12 @@
 
             <!--Barra de herramientas sobre la vitrina-->
             <div class="library-toolbar">
+                <div class="cd-vitrine" id="cdVitrine"></div>
                 <!--Boton cuadrado para alternar entre vista de cuadricula y vista de lista-->
                 <button class="hw-btn-small" id="toggleLayoutBtn" title="Cambiar vista">
                     <svg viewBox="0 0 24 24" width="16" heigh="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points=" 9 14 4 9 9 4"></polyline>
-                        <path d="M20 20v-7a4 4 0 0 0-4H4"></path>
+                        <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
                     </svg>
                 </button>
                 <!--Boton alargado para abrir el formulario de agregar un nuevo CD-->
