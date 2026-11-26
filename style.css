@@ -80,8 +80,8 @@ body {
 /*Seccion Superior: Divide el espacio en 3 columnas (230px izquierda, flexible centro, 220px derecha*/
 .upper-deck {
     display: grid;
-    grid-template-columns: 230px 1fr 220px;
-    gap: 20px;          /*Separacion entre columnas*/
+    grid-template-columns: 210px minmax(200px, 1fr) 200px;
+    gap: 16px;          /*Separacion entre columnas*/
     align-items: center;/*Alinea verticalmente al centro*/
     position: relative;
 }
@@ -215,7 +215,7 @@ body {
     width: 26px;
     height: 26px;
     border-radius: 50%;
-    background:(circle at 35% 35%, #ffffff, #a8a296);
+    background: radial-gradient(circle at 35% 35%, #ffffff, #a8a296);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
