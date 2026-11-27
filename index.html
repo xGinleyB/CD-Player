@@ -23,12 +23,12 @@
         <!--Aca esta toda la carcasa fisica color crema del aparato y le colocamos un ID para poder manipularlo desde JavaScript-->
         <div class="device-chassis" id="deviceChassis">
 
-        <!--Seccion Superior: Contiene el plato, controles centrales y pantalla circular-->
-        <section class="upper-desk">
+        <!-- Seccion Superior: Forzamos fila horizontal ('display: flex; flex-direction: row') directamente aquí -->
+        <section class="upper-deck" style="display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 18px; width: 100%;">
 
-            <!--Zona Izquierda: Plato giratorio (tambien funcionara como zona para soltar los CD's arrastrados)-->
-            <div class="turntable-zone" id="dropZone">
-
+            <!-- Zona Izquierda: Plato giratorio (ancho fijo de 225px, no se encoge) -->
+            <div class="turntable-zone" id="dropZone" style="width: 225px; height: 225px; margin-left: -32px; flex-shrink: 0;">
+                
                 <!--Aro exterior transparente del plato-->
                 <div class="platter-ring">
                 
@@ -67,7 +67,7 @@
             </div>
             
             <!--Zona Central: Botones de transporte y pantalla con la pista-->
-            <div class="center-console">
+            <div class="center-console" style="flex: 1; min-width: 0;">
 
                 <!--Caja que agrupa los 3 botones fisicos-->
                 <div class="transport-controls">
@@ -115,7 +115,7 @@
                 </div>
             </div>
             <!--Zona Derecha: Encendido, pantalla circular y control de volumen-->
-            <div class="right-console">
+            <div class="right-console" style="width: 196px; flex-shrink: 0;">
 
                 <!--Fila superior con el boton circular de encendido y su luz LED-->
                 <div class="power-row">

@@ -690,3 +690,19 @@ body {
     flex: 0 0 196px !important;
   }
 }
+
+/* En celulares (pantallas menores a 680px), apila las 3 partes en vertical */
+@media (max-width: 680px) {
+  .upper-deck {
+    flex-direction: column !important;
+  }
+  .turntable-zone {
+    margin-left: 0 !important;
+  }
+  .center-console {
+    width: 100% !important;
+  }
+  .cd-vitrine {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
