@@ -103,6 +103,7 @@ body {
     width: 230px;
     height: 230px;
     margin-left: -34px;     /*Hace que el plato sobresalga un poco por el borde izquierdo, como en tu referencia*/
+    flex-shrink: 0;         /*Evita que el plato se aplaste o empuje*/
 }
 
 /*Aro exterior translucido del plato*/
@@ -406,6 +407,7 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 12px;
+    flex-shrink: 0;         /*Mantiene la pantalla circular redonda*/
 }
 
 .power-row {
