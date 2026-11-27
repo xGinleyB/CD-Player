@@ -232,11 +232,9 @@ powerBtn.addEventListener('click', () => {
   powerLed.classList.toggle('on', isPoweredOn);
   if (!isPoweredOn) {
     setPlaybackState(false);
-    deviceChassis.style.opacity = '0.88';
     mainTrackTitle.textContent = 'APAGADO';
     mainArtistName.textContent = '';
   } else {
-    deviceChassis.style.opacity = '1';
     if (currentAlbumIndex === -1) {
       mainTrackTitle.textContent = 'Sin Disco';
       mainArtistName.textContent = 'Carga un Album';
@@ -305,138 +303,41 @@ function mountAlbumOnDeck(albumIndex) {
   currentAlbumIndex = albumIndex;
   currentCoverImg.src = album.cover;
 
-  // Renderizamos todas las canciones asegurando que el texto y tamaño sean 100% visibles
+  // 1. Forzamos que la lista <ul> sea visible, tenga altura y muestre texto claro
+  trackListEl.style.cssText = `
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    height: 92px;
+    overflow-y: auto;
+    padding: 4px 2px;
+    margin: 0;
+    color: #d8ece3;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.74rem;
+  `;
+
+  // 2. Generamos cada fila <li> con estilos explícitos para que nunca quede oculta
   trackListEl.innerHTML = album.tracks.map((track, idx) => {
     const num = String(idx + 1).padStart(2, '0');
     return `
       <li class="track-item" data-index="${idx}"
-          style="display: block; font-size: 0.74rem; color: #d8ece3; padding: 3px 6px; cursor: pointer;">
+          style="display: block !important; visibility: visible !important; opacity: 1 !important;
+                 color: #d8ece3; font-size: 0.74rem; line-height: 1.35; padding: 2px 4px;
+                 cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
         ${num}. ${track.title}
       </li>
     `;
   }).join('');
 
-  // Conectamos el clic a cada canción de la lista
+  // 3. Conectamos el clic a cada canción de la lista
   trackListEl.querySelectorAll('.track-item').forEach(item => {
     item.addEventListener('click', () => {
       loadTrack(parseInt(item.getAttribute('data-index'), 10), true);
     });
   });
 
+  // 4. Cargamos la primera canción y resaltamos su fila en verde menta
   loadTrack(0, true);
 }
-
-// Dibuja los espacios de la vitrina: tus CDs con carátula + espacios vacíos solo con CD iridiscente
-function renderVitrine() {
-  const totalSlots = isCompactGrid ? 6 : 8;
-  let html = '';
-
-  for (let i = 0; i < Math.max(totalSlots, library.length); i++) {
-    if (i < library.length) {
-      // Álbum real agregado por ti
-      const album = library[i];
-      html += `
-        <div class="cd-case" draggable="true" data-album-index="${i}" title="Clic o arrastra al plato: ${album.artist}">
-          <img src="${album.cover}" alt="${album.artist}" />
-        </div>
-      `;
-    } else {
-      // Todos los espacios vacíos muestran únicamente el disco iridiscente sin carátula
-      html += `
-        <div class="cd-case exposed-disc" title="Espacio disponible">
-          <div class="iridescent-cd"></div>
-        </div>
-      `;
-    }
-  }
-
-  cdVitrine.innerHTML = html;
-
-  // Eventos de clic y arrastre para los álbumes cargados
-  cdVitrine.querySelectorAll('.cd-case[data-album-index]').forEach(card => {
-    const idx = parseInt(card.getAttribute('data-album-index'), 10);
-    card.addEventListener('click', () => mountAlbumOnDeck(idx));
-    card.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/plain', idx));
-  });
-}
-
-function renderVitrine() {
-  // Muestra 6 espacios en modo compacto (1 fila limpia) o 8 en modo expandido
-  const totalSlots = isCompactGrid ? 6 : 8;
-  let html = '';
-
-  for (let i = 0; i < Math.max(totalSlots, library.length); i++) {
-    if (i < library.length) {
-      const album = library[i];
-      html += `
-        <div class="cd-case" draggable="true" data-album-index="${i}" title="Clic o arrastra al plato: ${album.artist}">
-          <img src="${album.cover}" alt="${album.artist}" />
-        </div>
-      `;
-    } else if (i % 2 === 0) {
-      html += `
-        <div class="cd-case exposed-disc" title="Espacio disponible">
-          <div class="iridescent-cd"></div>
-        </div>
-      `;
-    } else {
-      html += `
-        <div class="cd-case" style="opacity: 0.35; cursor: default;" title="Espacio disponible">
-          <img src="${defaultCover}" alt="Vacio" />
-        </div>
-      `;
-    }
-  }
-
-  cdVitrine.innerHTML = html;
-
-  cdVitrine.querySelectorAll('.cd-case[data-album-index]').forEach(card => {
-    const idx = parseInt(card.getAttribute('data-album-index'), 10);
-    card.addEventListener('click', () => mountAlbumOnDeck(idx));
-    card.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/plain', idx));
-  });
-}
-
-dropZone.addEventListener('dragover', (e) => e.preventDefault());
-dropZone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  const idx = parseInt(e.dataTransfer.getData('text/plain'), 10);
-  if (!isNaN(idx)) mountAlbumOnDeck(idx);
-});
-
-let eqPhase = 0;
-function animateCircularEq() {
-  const cx = eqCanvas.width / 2;
-  const cy = eqCanvas.height / 2;
-  const radius = 84;
-  const bars = 90;
-
-  ctx.clearRect(0, 0, eqCanvas.width, eqCanvas.height);
-
-  for (let i = 0; i < bars; i++) {
-    const angle = (i / bars) * Math.PI * 2;
-    const wave = isPlaying
-      ? Math.abs(Math.sin(i * 0.35 + eqPhase) * Math.cos(i * 0.15 - eqPhase * 0.7)) * 14
-      : Math.abs(Math.sin(i * 0.35)) * 4;
-    const barHeight = 3 + wave;
-
-    const x1 = cx + Math.cos(angle) * radius;
-    const y1 = cy + Math.sin(angle) * radius;
-    const x2 = cx + Math.cos(angle) * (radius + barHeight);
-    const y2 = cy + Math.sin(angle) * (radius + barHeight);
-
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-  }
-
-  if (isPlaying) eqPhase += 0.12;
-  requestAnimationFrame(animateCircularEq);
-}
-
-// Arranque inicial
-renderVitrine();
-animateCircularEq();
