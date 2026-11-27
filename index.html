@@ -183,6 +183,17 @@
         <!--Pieza decorativa inferior que simula madera-->
         <div class="wood-base"></div>
 
+        <!-- Pieza decorativa inferior que simula madera -->
+        <div class="wood-base"></div>
+
+        <!-- NUEVO: Selectores ocultos de archivos que activará el botón "+ Agregar CD" -->
+        <!-- 'multiple' permite seleccionar varias canciones (.mp3, .wav, etc.) al mismo tiempo -->
+        <input type="file" id="audioFilesInput" accept="audio/*" multiple style="display: none;" />
+        <!-- 'accept="image/*"' filtra para elegir una foto de carátula opcional -->
+        <input type="file" id="coverFileInput" accept="image/*" style="display: none;" />
+
+        </div><!--Cierra 'device-chassis'-->
+
         </div><!--Cierra 'device-chassis'-->
 
     </main><!--Cierra 'desk-surface'-->
