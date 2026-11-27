@@ -706,3 +706,58 @@ body {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 }
+
+/* =========================================================
+   AJUSTE COMPACTO PARA LAPTOP (SIN SCROLL) Y LISTA OLED
+   ========================================================= */
+
+/* 1. Reduce el espacio exterior alrededor del aparato */
+body {
+  padding: 14px 16px 18px !important;
+}
+
+.device-chassis {
+  max-width: 740px !important;
+  padding: 18px 22px 14px !important;
+}
+
+/* 2. Reduce la separación de la ranura metálica central */
+.chassis-groove {
+  margin: 14px -22px 12px !important;
+}
+
+.library-toolbar {
+  margin-bottom: 10px !important;
+}
+
+/* 3. Hace la vitrina más baja y los CDs más pequeños (6 columnas en lugar de 4) */
+.cd-vitrine {
+  min-height: auto !important;
+  padding: 10px !important;
+  grid-template-columns: repeat(6, 1fr) !important; /* CDs más pequeños y compactos */
+  gap: 10px !important;
+}
+
+/* 4. Asegura que las canciones dentro de la pantalla OLED se vean claras */
+.track-list {
+  height: 96px !important;
+  color: #e6f5ee !important;
+}
+
+.track-item {
+  color: #b8d8ca !important;
+  opacity: 0.85 !important;
+  line-height: 1.4 !important;
+}
+
+.track-item.active {
+  color: var(--mint-glow) !important;
+  opacity: 1 !important;
+}
+
+/* En celulares pequeños mantiene 3 CDs por fila */
+@media (max-width: 680px) {
+  .cd-vitrine {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
