@@ -208,13 +208,12 @@ function loadTrack(trackIndex, autoPlay = true) {
   mainTrackTitle.textContent = track.title;
   mainArtistName.textContent = album.artist;
 
-  const items = trackListEl.querySelectorAll('.track-item');
-  items.forEach((li, idx) => {
-    const active = idx === trackIndex;
-    li.classList.toggle('active', active);
-    li.style.color = active ? '#5ef2b8' : '#d8ece3';
-    li.style.fontWeight = active ? '700' : '400';
-  });
+  const items = trackListEl.querySelectorAll('.clean-track-row');
+items.forEach((row, idx) => {
+  const active = idx === trackIndex;
+  row.style.color = active ? '#5ef2b8' : '#d8ece3';
+  row.style.fontWeight = active ? '700' : '400';
+});
 
   if (autoPlay) setPlaybackState(true);
 }
@@ -293,35 +292,36 @@ function mountAlbumOnDeck(albumIndex) {
   currentAlbumIndex = albumIndex;
   currentCoverImg.src = album.cover;
 
+  // Quitamos cualquier clase CSS externa que esté ocultando el texto
+  trackListEl.className = '';
   trackListEl.style.cssText = `
     list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    display: block;
+    width: 100%;
     height: 92px;
     overflow-y: auto;
     padding: 4px 2px;
-    margin: 0;
-    color: #d8ece3;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.74rem;
+    margin: 4px 0;
+    text-align: left;
   `;
 
+  // Creamos filas <div> limpias sin heredar estilos rotos de <li>
   trackListEl.innerHTML = album.tracks.map((track, idx) => {
     const num = String(idx + 1).padStart(2, '0');
     return `
-      <li class="track-item" data-index="${idx}"
-          style="display: block !important; visibility: visible !important; opacity: 1 !important;
-                 color: #d8ece3; font-size: 0.74rem; line-height: 1.35; padding: 2px 4px;
-                 cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+      <div class="clean-track-row" data-index="${idx}"
+           style="display: block; width: 100%; font-family: 'JetBrains Mono', monospace;
+                  font-size: 12px; line-height: 20px; color: #d8ece3;
+                  padding: 1px 4px; cursor: pointer; white-space: nowrap;
+                  overflow: hidden; text-overflow: ellipsis;">
         ${num}. ${track.title}
-      </li>
+      </div>
     `;
   }).join('');
 
-  trackListEl.querySelectorAll('.track-item').forEach(item => {
-    item.addEventListener('click', () => {
-      loadTrack(parseInt(item.getAttribute('data-index'), 10), true);
+  trackListEl.querySelectorAll('.clean-track-row').forEach(row => {
+    row.addEventListener('click', () => {
+      loadTrack(parseInt(row.getAttribute('data-index'), 10), true);
     });
   });
 
