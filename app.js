@@ -212,6 +212,7 @@ function loadTrack(trackIndex, autoPlay = true) {
 items.forEach((row, idx) => {
   const active = idx === trackIndex;
   row.style.color = active ? '#5ef2b8' : '#d8ece3';
+  if (active) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   row.style.fontWeight = active ? '700' : '400';
 });
 
@@ -293,7 +294,7 @@ function mountAlbumOnDeck(albumIndex) {
   currentCoverImg.src = album.cover;
 
   // Quitamos cualquier clase CSS externa que esté ocultando el texto
-  trackListEl.className = '';
+  trackListEl.className = 'oled-scroll';
   trackListEl.style.cssText = `
     list-style: none;
     display: block;

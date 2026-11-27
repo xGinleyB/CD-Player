@@ -761,3 +761,15 @@ body {
     grid-template-columns: repeat(3, 1fr) !important;
   }
 }
+
+/* Scrollbar minimalista verde menta para la pantalla OLED */
+.oled-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.oled-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.oled-scroll::-webkit-scrollbar-thumb {
+  background: rgba(94, 242, 184, 0.45);
+  border-radius: 4px;
+}
