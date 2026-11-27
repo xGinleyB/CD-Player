@@ -266,13 +266,6 @@ body {
     border: 2px solid #fff3d6
 }
 
-/*Consola Central*/
-.center-console {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
-
 /*Bandeja empotrada donde van los 3 botones*/
 .transport-controls {
     display: grid;
@@ -639,18 +632,28 @@ body {
 }
 
 /* DISEÑO RESPONSIVE: Se activa automáticamente si la pantalla mide menos de 740px (iPad vertical / móvil) */
-@media (max-width: 740px) {
+@media (max-width: 680px) {
+  .device-chassis {
+    padding: 20px 16px 18px;
+    border-radius: 22px;
+  }
+
+  /* En pantallas pequeñas apila las 3 partes superiores en vertical */
   .upper-deck {
-    grid-template-columns: 1fr; /* Apila las 3 secciones superiores en una sola columna */
-    justify-items: center;
+    flex-direction: column !important;
+    align-items: center;
+    gap: 18px;
   }
+
   .turntable-zone {
-    margin-left: 0;       /* Centra el plato para que no se corte en pantallas estrechas */
+    margin-left: 0; /* Centra el plato en móvil */
   }
+
   .center-console {
     width: 100%;
   }
+
   .cd-vitrine {
-    grid-template-columns: repeat(2, 1fr); /* Muestra 2 CDs por fila en lugar de 4 */
+    grid-template-columns: repeat(2, 1fr); /* 2 CDs por fila en móvil */
   }
 }
