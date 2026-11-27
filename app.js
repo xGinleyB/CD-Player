@@ -43,18 +43,16 @@ let isPlaying         = false;
 let library           = [];
 let currentAlbumIndex = -1;
 let currentTrackIndex = 0;
-let isCompactGrid     = true; // Empieza en 6 columnas compactas
+let isCompactGrid     = true;
 
-// Estado inicial en descanso
 tonearm.classList.add('resting');
 playLed.classList.remove('active');
 playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
 
 
 // =========================================================
-// BLOQUE 3: VENTANA MODAL PARA AGREGAR CD (SIN BLOQUEOS)
+// BLOQUE 3: VENTANA MODAL PARA AGREGAR CD
 // =========================================================
-// Creamos dinámicamente un pequeño cuadro de diálogo estilo retro
 const modalOverlay = document.createElement('div');
 modalOverlay.style.cssText = `
   position: fixed; inset: 0; background: rgba(18, 21, 20, 0.72);
@@ -101,7 +99,6 @@ modalOverlay.innerHTML = `
 `;
 document.body.appendChild(modalOverlay);
 
-// Referencias a los botones internos del cuadro de diálogo
 const modalAlbumName    = document.getElementById('modalAlbumName');
 const modalPickAudioBtn = document.getElementById('modalPickAudioBtn');
 const modalPickCoverBtn = document.getElementById('modalPickCoverBtn');
@@ -112,7 +109,6 @@ let tempTracks = [];
 let tempCoverUrl = '';
 const defaultCover = 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=500&q=80';
 
-// Al hacer clic en "+ Agregar CD", abrimos nuestro cuadro limpio
 addCdBtn.addEventListener('click', () => {
   tempTracks = [];
   tempCoverUrl = '';
@@ -122,7 +118,6 @@ addCdBtn.addEventListener('click', () => {
   modalOverlay.style.display = 'flex';
 });
 
-// Clic directo del usuario -> Chrome permite abrir el selector de audio sin bloqueos
 modalPickAudioBtn.addEventListener('click', () => {
   audioFilesInput.value = '';
   audioFilesInput.click();
@@ -133,7 +128,6 @@ audioFilesInput.addEventListener('change', (e) => {
   if (files.length === 0) return;
 
   tempTracks = files.map(file => ({
-    // Limpia la extensión (.mp3) y quita números iniciales repetidos como "08. " o "8 - "
     title: file.name
       .replace(/\.[^/.]+$/, '')
       .replace(/^\d+[\.\-\s_]+/, '')
@@ -144,7 +138,6 @@ audioFilesInput.addEventListener('change', (e) => {
   modalPickAudioBtn.textContent = `✓ ${tempTracks.length} canciones listas`;
 });
 
-// Clic directo del usuario -> Chrome permite abrir el selector de imagen sin bloqueos
 modalPickCoverBtn.addEventListener('click', () => {
   coverFileInput.value = '';
   coverFileInput.click();
@@ -215,7 +208,6 @@ function loadTrack(trackIndex, autoPlay = true) {
   mainTrackTitle.textContent = track.title;
   mainArtistName.textContent = album.artist;
 
-  // Resaltamos en verde menta la canción activa y dejamos las demás en blanco suave
   const items = trackListEl.querySelectorAll('.track-item');
   items.forEach((li, idx) => {
     const active = idx === trackIndex;
@@ -280,7 +272,6 @@ volumeSlider.addEventListener('input', () => {
   audioPlayer.volume = parseFloat(volumeSlider.value);
 });
 
-// Botón para alternar entre vitrina compacta (6 CDs por fila) y mediana (4 CDs por fila)
 toggleLayoutBtn.addEventListener('click', () => {
   isCompactGrid = !isCompactGrid;
   cdVitrine.style.setProperty(
@@ -295,7 +286,6 @@ toggleLayoutBtn.addEventListener('click', () => {
 // =========================================================
 // BLOQUE 5: VITRINA INTERACTIVA Y ECUALIZADOR CIRCULAR
 // =========================================================
-// Coloca un CD de la vitrina encima del plato giratorio
 function mountAlbumOnDeck(albumIndex) {
   const album = library[albumIndex];
   if (!album) return;
@@ -303,7 +293,6 @@ function mountAlbumOnDeck(albumIndex) {
   currentAlbumIndex = albumIndex;
   currentCoverImg.src = album.cover;
 
-  // 1. Forzamos que la lista <ul> sea visible, tenga altura y muestre texto claro
   trackListEl.style.cssText = `
     list-style: none;
     display: flex;
@@ -318,7 +307,6 @@ function mountAlbumOnDeck(albumIndex) {
     font-size: 0.74rem;
   `;
 
-  // 2. Generamos cada fila <li> con estilos explícitos para que nunca quede oculta
   trackListEl.innerHTML = album.tracks.map((track, idx) => {
     const num = String(idx + 1).padStart(2, '0');
     return `
@@ -331,13 +319,84 @@ function mountAlbumOnDeck(albumIndex) {
     `;
   }).join('');
 
-  // 3. Conectamos el clic a cada canción de la lista
   trackListEl.querySelectorAll('.track-item').forEach(item => {
     item.addEventListener('click', () => {
       loadTrack(parseInt(item.getAttribute('data-index'), 10), true);
     });
   });
 
-  // 4. Cargamos la primera canción y resaltamos su fila en verde menta
   loadTrack(0, true);
 }
+
+function renderVitrine() {
+  const totalSlots = isCompactGrid ? 6 : 8;
+  let html = '';
+
+  for (let i = 0; i < Math.max(totalSlots, library.length); i++) {
+    if (i < library.length) {
+      const album = library[i];
+      html += `
+        <div class="cd-case" draggable="true" data-album-index="${i}" title="Clic o arrastra al plato: ${album.artist}">
+          <img src="${album.cover}" alt="${album.artist}" />
+        </div>
+      `;
+    } else {
+      html += `
+        <div class="cd-case exposed-disc" title="Espacio disponible">
+          <div class="iridescent-cd"></div>
+        </div>
+      `;
+    }
+  }
+
+  cdVitrine.innerHTML = html;
+
+  cdVitrine.querySelectorAll('.cd-case[data-album-index]').forEach(card => {
+    const idx = parseInt(card.getAttribute('data-album-index'), 10);
+    card.addEventListener('click', () => mountAlbumOnDeck(idx));
+    card.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/plain', idx));
+  });
+}
+
+dropZone.addEventListener('dragover', (e) => e.preventDefault());
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  const idx = parseInt(e.dataTransfer.getData('text/plain'), 10);
+  if (!isNaN(idx)) mountAlbumOnDeck(idx);
+});
+
+let eqPhase = 0;
+function animateCircularEq() {
+  const cx = eqCanvas.width / 2;
+  const cy = eqCanvas.height / 2;
+  const radius = 84;
+  const bars = 90;
+
+  ctx.clearRect(0, 0, eqCanvas.width, eqCanvas.height);
+
+  for (let i = 0; i < bars; i++) {
+    const angle = (i / bars) * Math.PI * 2;
+    const wave = isPlaying
+      ? Math.abs(Math.sin(i * 0.35 + eqPhase) * Math.cos(i * 0.15 - eqPhase * 0.7)) * 14
+      : Math.abs(Math.sin(i * 0.35)) * 4;
+    const barHeight = 3 + wave;
+
+    const x1 = cx + Math.cos(angle) * radius;
+    const y1 = cy + Math.sin(angle) * radius;
+    const x2 = cx + Math.cos(angle) * (radius + barHeight);
+    const y2 = cy + Math.sin(angle) * (radius + barHeight);
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+
+  if (isPlaying) eqPhase += 0.12;
+  requestAnimationFrame(animateCircularEq);
+}
+
+renderVitrine();
+animateCircularEq();
