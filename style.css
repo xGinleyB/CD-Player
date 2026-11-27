@@ -204,7 +204,7 @@ body {
 
 /*Clase que usara JavaScript para retirar el brazo cuando este en pausa*/
 .tonearm-assembly.resting {
-    transform: rotate(-6deg);
+    transform: rotate(-18deg);  /*Lo aparta limpiamente del borde del disco*/
 }
 
 /*Contrapeso trasero verde salvia*/

@@ -215,9 +215,13 @@ function loadTrack(trackIndex, autoPlay = true) {
   mainTrackTitle.textContent = track.title;
   mainArtistName.textContent = album.artist;
 
+  // Resaltamos en verde menta la canción activa y dejamos las demás en blanco suave
   const items = trackListEl.querySelectorAll('.track-item');
   items.forEach((li, idx) => {
-    li.classList.toggle('active', idx === trackIndex);
+    const active = idx === trackIndex;
+    li.classList.toggle('active', active);
+    li.style.color = active ? '#5ef2b8' : '#d8ece3';
+    li.style.fontWeight = active ? '700' : '400';
   });
 
   if (autoPlay) setPlaybackState(true);
@@ -293,6 +297,7 @@ toggleLayoutBtn.addEventListener('click', () => {
 // =========================================================
 // BLOQUE 5: VITRINA INTERACTIVA Y ECUALIZADOR CIRCULAR
 // =========================================================
+// Coloca un CD de la vitrina encima del plato giratorio
 function mountAlbumOnDeck(albumIndex) {
   const album = library[albumIndex];
   if (!album) return;
@@ -300,12 +305,18 @@ function mountAlbumOnDeck(albumIndex) {
   currentAlbumIndex = albumIndex;
   currentCoverImg.src = album.cover;
 
-  // Renderizamos todas las canciones en la pantalla OLED negra
+  // Renderizamos todas las canciones asegurando que el texto y tamaño sean 100% visibles
   trackListEl.innerHTML = album.tracks.map((track, idx) => {
     const num = String(idx + 1).padStart(2, '0');
-    return `<li class="track-item" data-index="${idx}">${num}. ${track.title}</li>`;
+    return `
+      <li class="track-item" data-index="${idx}"
+          style="display: block; font-size: 0.74rem; color: #d8ece3; padding: 3px 6px; cursor: pointer;">
+        ${num}. ${track.title}
+      </li>
+    `;
   }).join('');
 
+  // Conectamos el clic a cada canción de la lista
   trackListEl.querySelectorAll('.track-item').forEach(item => {
     item.addEventListener('click', () => {
       loadTrack(parseInt(item.getAttribute('data-index'), 10), true);
@@ -313,6 +324,40 @@ function mountAlbumOnDeck(albumIndex) {
   });
 
   loadTrack(0, true);
+}
+
+// Dibuja los espacios de la vitrina: tus CDs con carátula + espacios vacíos solo con CD iridiscente
+function renderVitrine() {
+  const totalSlots = isCompactGrid ? 6 : 8;
+  let html = '';
+
+  for (let i = 0; i < Math.max(totalSlots, library.length); i++) {
+    if (i < library.length) {
+      // Álbum real agregado por ti
+      const album = library[i];
+      html += `
+        <div class="cd-case" draggable="true" data-album-index="${i}" title="Clic o arrastra al plato: ${album.artist}">
+          <img src="${album.cover}" alt="${album.artist}" />
+        </div>
+      `;
+    } else {
+      // Todos los espacios vacíos muestran únicamente el disco iridiscente sin carátula
+      html += `
+        <div class="cd-case exposed-disc" title="Espacio disponible">
+          <div class="iridescent-cd"></div>
+        </div>
+      `;
+    }
+  }
+
+  cdVitrine.innerHTML = html;
+
+  // Eventos de clic y arrastre para los álbumes cargados
+  cdVitrine.querySelectorAll('.cd-case[data-album-index]').forEach(card => {
+    const idx = parseInt(card.getAttribute('data-album-index'), 10);
+    card.addEventListener('click', () => mountAlbumOnDeck(idx));
+    card.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/plain', idx));
+  });
 }
 
 function renderVitrine() {
