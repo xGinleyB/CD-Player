@@ -24,6 +24,8 @@ const volumeSlider    = document.getElementById('volumeSlider');
 
 const cdVitrine       = document.getElementById('cdVitrine');
 const addCdBtn        = document.getElementById('addCdBtn');
+const shuffleBtn      = document.getElementById('shuffleBtn');
+const shuffleLed      = document.getElementById('shuffleLed');
 const toggleLayoutBtn = document.getElementById('toggleLayoutBtn');
 const audioFilesInput = document.getElementById('audioFilesInput');
 const coverFileInput  = document.getElementById('coverFileInput');
@@ -33,13 +35,65 @@ const ctx             = eqCanvas.getContext('2d');
 
 
 // =========================================================
-// BLOQUE 2: MOTOR DE AUDIO Y ESTADO DEL REPRODUCTOR
+// BLOQUE 2: BASE DE DATOS PERSISTENTE (IndexedDB)
+// =========================================================
+const DB_NAME = 'RetroCDDeckDB';
+const STORE_NAME = 'albums';
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, 1);
+    request.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function saveAlbumToDB(albumData) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const req = tx.objectStore(STORE_NAME).add(albumData);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function loadAllAlbumsFromDB() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const req = tx.objectStore(STORE_NAME).getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function deleteAlbumFromDB(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const req = tx.objectStore(STORE_NAME).delete(id);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+
+// =========================================================
+// BLOQUE 3: MOTOR DE AUDIO Y ESTADO DEL REPRODUCTOR
 // =========================================================
 const audioPlayer = new Audio();
 audioPlayer.volume = 0.8;
 
 let isPoweredOn       = true;
 let isPlaying         = false;
+let isShuffle         = false; // Controla el modo Aleatorio
 let library           = [];
 let currentAlbumIndex = -1;
 let currentTrackIndex = 0;
@@ -51,7 +105,7 @@ playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
 
 
 // =========================================================
-// BLOQUE 3: VENTANA MODAL PARA AGREGAR CD
+// BLOQUE 4: VENTANA MODAL PARA AGREGAR CD
 // =========================================================
 const modalOverlay = document.createElement('div');
 modalOverlay.style.cssText = `
@@ -105,13 +159,13 @@ const modalPickCoverBtn = document.getElementById('modalPickCoverBtn');
 const modalCancelBtn    = document.getElementById('modalCancelBtn');
 const modalSaveBtn      = document.getElementById('modalSaveBtn');
 
-let tempTracks = [];
-let tempCoverUrl = '';
+let tempRawTracks = [];
+let tempCoverBlob = null;
 const defaultCover = 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=500&q=80';
 
 addCdBtn.addEventListener('click', () => {
-  tempTracks = [];
-  tempCoverUrl = '';
+  tempRawTracks = [];
+  tempCoverBlob = null;
   modalAlbumName.value = '';
   modalPickAudioBtn.textContent = 'Seleccionar archivos de audio...';
   modalPickCoverBtn.textContent = 'Elegir imagen de portada...';
@@ -127,15 +181,15 @@ audioFilesInput.addEventListener('change', (e) => {
   const files = Array.from(e.target.files);
   if (files.length === 0) return;
 
-  tempTracks = files.map(file => ({
+  tempRawTracks = files.map(file => ({
     title: file.name
       .replace(/\.[^/.]+$/, '')
       .replace(/^\d+[\.\-\s_]+/, '')
       .trim(),
-    url: URL.createObjectURL(file)
+    blob: file // Guardamos el archivo original para IndexedDB
   }));
 
-  modalPickAudioBtn.textContent = `✓ ${tempTracks.length} canciones listas`;
+  modalPickAudioBtn.textContent = `✓ ${tempRawTracks.length} canciones listas`;
 });
 
 modalPickCoverBtn.addEventListener('click', () => {
@@ -146,7 +200,7 @@ modalPickCoverBtn.addEventListener('click', () => {
 coverFileInput.addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
-  tempCoverUrl = URL.createObjectURL(file);
+  tempCoverBlob = file;
   modalPickCoverBtn.textContent = `✓ Portada: ${file.name.slice(0, 18)}...`;
 });
 
@@ -154,19 +208,36 @@ modalCancelBtn.addEventListener('click', () => {
   modalOverlay.style.display = 'none';
 });
 
-modalSaveBtn.addEventListener('click', () => {
-  if (tempTracks.length === 0) {
+modalSaveBtn.addEventListener('click', async () => {
+  if (tempRawTracks.length === 0) {
     alert('Por favor selecciona al menos una canción antes de guardar.');
     return;
   }
 
+  modalSaveBtn.textContent = 'Guardando...';
   const albumTitle = modalAlbumName.value.trim() || `Mi CD #${library.length + 1}`;
-  library.push({
-    artist: albumTitle,
-    cover: tempCoverUrl || defaultCover,
-    tracks: tempTracks
-  });
 
+  // Guardamos permanentemente en IndexedDB
+  const recordToStore = {
+    artist: albumTitle,
+    coverBlob: tempCoverBlob,
+    tracks: tempRawTracks
+  };
+  const savedId = await saveAlbumToDB(recordToStore);
+
+  // Creamos las URLs activas en memoria para reproducir de inmediato
+  const activeAlbum = {
+    id: savedId,
+    artist: albumTitle,
+    cover: tempCoverBlob ? URL.createObjectURL(tempCoverBlob) : defaultCover,
+    tracks: tempRawTracks.map(t => ({
+      title: t.title,
+      url: URL.createObjectURL(t.blob)
+    }))
+  };
+
+  library.push(activeAlbum);
+  modalSaveBtn.textContent = 'Guardar CD';
   modalOverlay.style.display = 'none';
   renderVitrine();
   mountAlbumOnDeck(library.length - 1);
@@ -174,7 +245,7 @@ modalSaveBtn.addEventListener('click', () => {
 
 
 // =========================================================
-// BLOQUE 4: REPRODUCCIÓN, CONTROLES Y CAMBIO DE VISTA
+// BLOQUE 5: REPRODUCCIÓN, SHUFFLE Y CONTROLES
 // =========================================================
 function setPlaybackState(playing) {
   if (!isPoweredOn || currentAlbumIndex === -1) return;
@@ -209,15 +280,32 @@ function loadTrack(trackIndex, autoPlay = true) {
   mainArtistName.textContent = album.artist;
 
   const items = trackListEl.querySelectorAll('.clean-track-row');
-items.forEach((row, idx) => {
-  const active = idx === trackIndex;
-  row.style.color = active ? '#5ef2b8' : '#d8ece3';
-  if (active) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  row.style.fontWeight = active ? '700' : '400';
-});
+  items.forEach((row, idx) => {
+    const active = idx === trackIndex;
+    row.style.color = active ? '#5ef2b8' : '#d8ece3';
+    if (active) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    row.style.fontWeight = active ? '700' : '400';
+  });
 
   if (autoPlay) setPlaybackState(true);
 }
+
+// Calcula una pista al azar distinta de la actual
+function getRandomTrackIndex(totalTracks) {
+  if (totalTracks <= 1) return 0;
+  let randomIdx;
+  do {
+    randomIdx = Math.floor(Math.random() * totalTracks);
+  } while (randomIdx === currentTrackIndex);
+  return randomIdx;
+}
+
+// Botón Aleatorio (Shuffle)
+shuffleBtn.addEventListener('click', () => {
+  isShuffle = !isShuffle;
+  shuffleLed.style.background = isShuffle ? '#5ef2b8' : '#b5ab99';
+  shuffleLed.style.boxShadow = isShuffle ? '0 0 6px #5ef2b8' : 'none';
+});
 
 powerBtn.addEventListener('click', () => {
   isPoweredOn = !isPoweredOn;
@@ -245,13 +333,19 @@ playPauseBtn.addEventListener('click', () => {
 prevBtn.addEventListener('click', () => {
   if (!isPoweredOn || currentAlbumIndex === -1) return;
   const album = library[currentAlbumIndex];
-  loadTrack((currentTrackIndex - 1 + album.tracks.length) % album.tracks.length, true);
+  const targetIdx = isShuffle
+    ? getRandomTrackIndex(album.tracks.length)
+    : (currentTrackIndex - 1 + album.tracks.length) % album.tracks.length;
+  loadTrack(targetIdx, true);
 });
 
 nextBtn.addEventListener('click', () => {
   if (!isPoweredOn || currentAlbumIndex === -1) return;
   const album = library[currentAlbumIndex];
-  loadTrack((currentTrackIndex + 1) % album.tracks.length, true);
+  const targetIdx = isShuffle
+    ? getRandomTrackIndex(album.tracks.length)
+    : (currentTrackIndex + 1) % album.tracks.length;
+  loadTrack(targetIdx, true);
 });
 
 audioPlayer.addEventListener('ended', () => nextBtn.click());
@@ -284,16 +378,15 @@ toggleLayoutBtn.addEventListener('click', () => {
 
 
 // =========================================================
-// BLOQUE 5: VITRINA INTERACTIVA Y ECUALIZADOR CIRCULAR
+// BLOQUE 6: VITRINA INTERACTIVA Y ECUALIZADOR CIRCULAR
 // =========================================================
-function mountAlbumOnDeck(albumIndex) {
+function mountAlbumOnDeck(albumIndex, autoPlay = true) {
   const album = library[albumIndex];
   if (!album) return;
 
   currentAlbumIndex = albumIndex;
   currentCoverImg.src = album.cover;
 
-  // Quitamos cualquier clase CSS externa que esté ocultando el texto
   trackListEl.className = 'oled-scroll';
   trackListEl.style.cssText = `
     list-style: none;
@@ -306,7 +399,6 @@ function mountAlbumOnDeck(albumIndex) {
     text-align: left;
   `;
 
-  // Creamos filas <div> limpias sin heredar estilos rotos de <li>
   trackListEl.innerHTML = album.tracks.map((track, idx) => {
     const num = String(idx + 1).padStart(2, '0');
     return `
@@ -326,7 +418,9 @@ function mountAlbumOnDeck(albumIndex) {
     });
   });
 
-  loadTrack(0, true);
+  // Si está en modo aleatorio al montar el disco, arranca con una canción aleatoria
+  const initialIdx = (autoPlay && isShuffle) ? getRandomTrackIndex(album.tracks.length) : 0;
+  loadTrack(initialIdx, autoPlay);
 }
 
 function renderVitrine() {
@@ -337,7 +431,8 @@ function renderVitrine() {
     if (i < library.length) {
       const album = library[i];
       html += `
-        <div class="cd-case" draggable="true" data-album-index="${i}" title="Clic o arrastra al plato: ${album.artist}">
+        <div class="cd-case" draggable="true" data-album-index="${i}"
+             title="Clic: reproducir | Clic derecho: quitar CD (${album.artist})">
           <img src="${album.cover}" alt="${album.artist}" />
         </div>
       `;
@@ -354,8 +449,27 @@ function renderVitrine() {
 
   cdVitrine.querySelectorAll('.cd-case[data-album-index]').forEach(card => {
     const idx = parseInt(card.getAttribute('data-album-index'), 10);
-    card.addEventListener('click', () => mountAlbumOnDeck(idx));
+    card.addEventListener('click', () => mountAlbumOnDeck(idx, true));
     card.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/plain', idx));
+
+    // Clic derecho permite borrar un CD guardado si ya no lo quieres en la vitrina
+    card.addEventListener('contextmenu', async (e) => {
+      e.preventDefault();
+      const album = library[idx];
+      if (confirm(`¿Quieres quitar "${album.artist}" de tu vitrina?`)) {
+        await deleteAlbumFromDB(album.id);
+        library.splice(idx, 1);
+        if (currentAlbumIndex === idx) {
+          setPlaybackState(false);
+          currentAlbumIndex = -1;
+          mainTrackTitle.textContent = 'Sin Disco';
+          mainArtistName.textContent = 'Carga un Album';
+        } else if (currentAlbumIndex > idx) {
+          currentAlbumIndex--;
+        }
+        renderVitrine();
+      }
+    });
   });
 }
 
@@ -363,7 +477,7 @@ dropZone.addEventListener('dragover', (e) => e.preventDefault());
 dropZone.addEventListener('drop', (e) => {
   e.preventDefault();
   const idx = parseInt(e.dataTransfer.getData('text/plain'), 10);
-  if (!isNaN(idx)) mountAlbumOnDeck(idx);
+  if (!isNaN(idx)) mountAlbumOnDeck(idx, true);
 });
 
 let eqPhase = 0;
@@ -399,5 +513,31 @@ function animateCircularEq() {
   requestAnimationFrame(animateCircularEq);
 }
 
-renderVitrine();
-animateCircularEq();
+// =========================================================
+// ARRANQUE INICIAL: RECUPERA LOS CDs GUARDADOS EN IndexedDB
+// =========================================================
+async function initApp() {
+  try {
+    const storedAlbums = await loadAllAlbumsFromDB();
+    library = storedAlbums.map(item => ({
+      id: item.id,
+      artist: item.artist,
+      cover: item.coverBlob ? URL.createObjectURL(item.coverBlob) : defaultCover,
+      tracks: item.tracks.map(t => ({
+        title: t.title,
+        url: URL.createObjectURL(t.blob)
+      }))
+    }));
+  } catch (err) {
+    console.error('Error cargando álbumes guardados:', err);
+  }
+
+  renderVitrine();
+  // Si ya había al menos un CD guardado, lo deja listo en el plato (en pausa) al abrir la página
+  if (library.length > 0) {
+    mountAlbumOnDeck(0, false);
+  }
+  animateCircularEq();
+}
+
+initApp();
